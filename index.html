@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organigrama Matricial — TecnoSoluciones GT</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:     #090d14;
+    --bg-card:     #0d1520;
+    --bg-card2:    #111c2d;
+    --border:      rgba(0,200,255,0.18);
+    --accent-cyan: #00c8ff;
+    --accent-lime: #39ff6a;
+    --accent-gold: #ffd447;
+    --accent-pink: #ff4fc8;
+    --accent-violet:#9b6bff;
+    --text-main:   #e2eaf5;
+    --text-muted:  #6b85a3;
+    --glow-cyan:   0 0 18px rgba(0,200,255,0.45);
+    --glow-lime:   0 0 18px rgba(57,255,106,0.4);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── grid background ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events:none;
+  }
+
+  /* ── floating orbs ── */
+  .orb {
+    position:fixed; border-radius:50%;
+    filter:blur(80px); opacity:.18; pointer-events:none; z-index:0;
+  }
+  .orb1 { width:420px; height:420px; background:var(--accent-cyan);  top:-80px; left:-80px; }
+  .orb2 { width:340px; height:340px; background:var(--accent-violet); bottom:50px; right:-60px; }
+  .orb3 { width:260px; height:260px; background:var(--accent-lime);   bottom:200px; left:30%; }
+
+  /* ── header ── */
+  header {
+    position:relative; z-index:10;
+    text-align:center; padding: 54px 24px 32px;
+  }
+  .logo-badge {
+    display:inline-flex; align-items:center; gap:10px;
+    background: rgba(0,200,255,0.08);
+    border:1px solid var(--border);
+    border-radius:100px;
+    padding:6px 20px;
+    font-size:.75rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-cyan); margin-bottom:20px;
+  }
+  .logo-badge span { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent-cyan); animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+  h1 {
+    font-family:'Orbitron', monospace;
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight:800;
+    background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-violet) 60%, var(--accent-lime) 100%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    background-clip:text;
+    letter-spacing:.04em; line-height:1.15;
+  }
+  .subtitle {
+    font-size:.9rem; color:var(--text-muted); margin-top:10px; letter-spacing:.06em;
+  }
+
+  /* ── legend ── */
+  .legend {
+    display:flex; flex-wrap:wrap; justify-content:center; gap:14px;
+    padding:0 24px 36px; position:relative; z-index:10;
+  }
+  .legend-item {
+    display:flex; align-items:center; gap:7px;
+    font-size:.75rem; color:var(--text-muted); letter-spacing:.05em;
+  }
+  .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+  /* ── main container ── */
+  .org-wrapper {
+    position:relative; z-index:10;
+    padding: 0 24px 80px;
+    max-width:1400px; margin:0 auto;
+  }
+
+  /* ── matrix grid ── */
+  .matrix {
+    display:grid;
+    grid-template-columns: 220px 1fr;
+    gap:0;
+    border:1px solid var(--border);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow: 0 0 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  /* ── axis labels ── */
+  .axis-row {
+    grid-column: 1/-1;
+    display:grid;
+    grid-template-columns: 220px repeat(6, 1fr);
+    background: rgba(0,200,255,0.06);
+    border-bottom:1px solid var(--border);
+  }
+  .axis-corner {
+    padding:18px 20px;
+    display:flex; align-items:center;
+    border-right:1px solid var(--border);
+    font-family:'Orbitron', monospace; font-size:.65rem;
+    color:var(--accent-cyan); letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+  .axis-col-label {
+    padding:16px 8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px;
+    border-right:1px solid var(--border); text-align:center;
+    font-size:.7rem; letter-spacing:.07em; color:var(--text-muted);
+    text-transform:uppercase;
+  }
+  .axis-col-label:last-child { border-right:none; }
+  .axis-col-label .col-icon { font-size:1.3rem; }
+
+  /* ── department rows ── */
+  .dept-section {
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns: 220px repeat(6, 1fr);
+    border-bottom:1px solid var(--border);
+    transition: background .3s;
+  }
+  .dept-section:last-child { border-bottom:none; }
+  .dept-section:hover { background:rgba(255,255,255,.015); }
+
+  /* ── dept label ── */
+  .dept-label {
+    padding:20px 16px;
+    display:flex; flex-direction:column; justify-content:center; gap:6px;
+    border-right:1px solid var(--border);
+    cursor:pointer;
+    transition:background .25s;
+  }
+  .dept-label:hover { background:rgba(0,200,255,.06); }
+  .dept-name {
+    font-family:'Orbitron', monospace;
+    font-size:.7rem; font-weight:600; letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .dept-head {
+    font-size:.68rem; color:var(--text-muted);
+  }
+  .dept-head strong { color:var(--text-main); }
+
+  /* ── cell ── */
+  .cell {
+    padding:14px 10px;
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column; gap:6px;
+    align-items:flex-start;
+    min-height:90px;
+  }
+  .cell:last-child { border-right:none; }
+
+  /* ── role chip ── */
+  .chip {
+    display:inline-flex; align-items:center; gap:5px;
+    border-radius:8px; padding:5px 9px;
+    font-size:.65rem; font-weight:600; letter-spacing:.06em;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition: transform .2s, box-shadow .2s, filter .2s;
+    position:relative;
+  }
+  .chip:hover {
+    transform:translateY(-2px) scale(1.04);
+    filter:brightness(1.25);
+  }
+  .chip .chip-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+  /* responsibility levels */
+  .r-lead   { background:rgba(0,200,255,.13);  border-color:rgba(0,200,255,.4);  color:var(--accent-cyan); }
+  .r-lead   .chip-dot { background:var(--accent-cyan); box-shadow:var(--glow-cyan); }
+
+  .r-exec   { background:rgba(57,255,106,.11); border-color:rgba(57,255,106,.4); color:var(--accent-lime); }
+  .r-exec   .chip-dot { background:var(--accent-lime); box-shadow:var(--glow-lime); }
+
+  .r-supp   { background:rgba(155,107,255,.12);border-color:rgba(155,107,255,.4);color:var(--accent-violet); }
+  .r-supp   .chip-dot { background:var(--accent-violet); }
+
+  .r-info   { background:rgba(255,212,71,.1);  border-color:rgba(255,212,71,.35); color:var(--accent-gold); }
+  .r-info   .chip-dot { background:var(--accent-gold); }
+
+  .r-coord  { background:rgba(255,79,200,.1);  border-color:rgba(255,79,200,.35); color:var(--accent-pink); }
+  .r-coord  .chip-dot { background:var(--accent-pink); }
+
+  /* ── tooltip ── */
+  .chip-tooltip {
+    display:none;
+    position:absolute; bottom:calc(100% + 8px); left:50%;
+    transform:translateX(-50%);
+    background:#1a2740; border:1px solid var(--border);
+    border-radius:10px; padding:10px 14px;
+    width:200px; z-index:999;
+    font-size:.68rem; color:var(--text-main);
+    line-height:1.5; pointer-events:none;
+    box-shadow:0 8px 24px rgba(0,0,0,.5);
+  }
+  .chip:hover .chip-tooltip { display:block; }
+  .chip-tooltip::after {
+    content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    border:6px solid transparent; border-top-color:#1a2740;
+  }
+  .tooltip-title { font-weight:600; color:var(--accent-cyan); margin-bottom:4px; font-size:.72rem; }
+
+  /* ── hierarchy block (top) ── */
+  .hierarchy {
+    position:relative; z-index:10;
+    display:flex; flex-direction:column; align-items:center;
+    gap:0; padding:0 24px 48px;
+    max-width:900px; margin:0 auto;
+  }
+
+  .h-level {
+    display:flex; justify-content:center; gap:20px;
+    flex-wrap:wrap; width:100%;
+  }
+
+  .h-connector {
+    width:2px; height:32px;
+    background:linear-gradient(to bottom, var(--accent-cyan), transparent);
+    margin:0 auto;
+  }
+  .h-connector-row {
+    display:flex; align-items:center; justify-content:center;
+    gap:0; width:60%; margin:0 auto;
+    height:2px;
+    background:linear-gradient(to right, transparent, var(--border), transparent);
+    margin-bottom:0;
+  }
+
+  .h-card {
+    background:var(--bg-card2);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px 24px;
+    text-align:center;
+    position:relative;
+    transition:transform .25s, box-shadow .25s, border-color .25s;
+    cursor:default;
+    min-width:160px;
+  }
+  .h-card:hover {
+    transform:translateY(-4px);
+    box-shadow:0 12px 40px rgba(0,0,0,.4);
+  }
+  .h-card.top {
+    border-color:rgba(0,200,255,.5);
+    box-shadow: var(--glow-cyan), 0 4px 20px rgba(0,0,0,.4);
+    min-width:220px;
+  }
+  .h-card.top:hover { border-color:var(--accent-cyan); }
+
+  .h-role {
+    font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--text-muted); margin-bottom:4px;
+  }
+  .h-name {
+    font-family:'Orbitron', monospace;
+    font-size:.78rem; font-weight:600;
+    color:var(--text-main);
+  }
+  .h-avatar {
+    width:38px; height:38px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem; margin:0 auto 8px;
+    border:2px solid rgba(0,200,255,.3);
+    background:rgba(0,200,255,.08);
+  }
+
+  .color-bar {
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    height:3px; width:60%; border-radius:0 0 14px 14px;
+  }
+
+  /* ── section heading ── */
+  .section-heading {
+    position:relative; z-index:10;
+    text-align:center;
+    margin-bottom:28px;
+    font-family:'Orbitron', monospace;
+    font-size:.75rem; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--accent-cyan);
+  }
+  .section-heading::before,
+  .section-heading::after {
+    content:'';
+    display:inline-block; vertical-align:middle;
+    width:60px; height:1px;
+    background:linear-gradient(to right, transparent, var(--accent-cyan));
+    margin:0 14px;
+  }
+  .section-heading::after { background:linear-gradient(to left, transparent, var(--accent-cyan)); }
+
+  /* ── info cards row ── */
+  .info-row {
+    position:relative; z-index:10;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+    gap:16px; padding:0 24px 60px; max-width:1400px; margin:0 auto;
+  }
+  .info-card {
+    background:var(--bg-card2);
+    border:1px solid var(--border);
+    border-radius:16px; padding:24px;
+    transition:transform .25s, box-shadow .25s;
+  }
+  .info-card:hover { transform:translateY(-4px); box-shadow:0 16px 40px rgba(0,0,0,.4); }
+  .info-card h3 {
+    font-family:'Orbitron', monospace; font-size:.72rem; letter-spacing:.1em;
+    text-transform:uppercase; margin-bottom:10px;
+  }
+  .info-card p { font-size:.8rem; color:var(--text-muted); line-height:1.7; }
+  .info-card ul { list-style:none; }
+  .info-card ul li {
+    font-size:.78rem; color:var(--text-muted);
+    padding:4px 0; display:flex; align-items:center; gap:8px; line-height:1.5;
+  }
+  .info-card ul li::before { content:'▹'; color:var(--accent-cyan); font-size:.7rem; }
+
+  /* ── footer ── */
+  footer {
+    position:relative; z-index:10;
+    text-align:center; padding:24px;
+    font-size:.68rem; color:var(--text-muted); letter-spacing:.08em;
+    border-top:1px solid var(--border);
+  }
+
+  /* ── animations ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .fade-up { animation: fadeUp .6s ease both; }
+  .delay-1 { animation-delay:.1s; }
+  .delay-2 { animation-delay:.2s; }
+  .delay-3 { animation-delay:.3s; }
+  .delay-4 { animation-delay:.4s; }
+
+  @media (max-width:768px) {
+    .matrix { display:block; border-radius:12px; }
+    .axis-row, .dept-section { display:block; }
+    .axis-col-label, .cell { border-right:none; border-bottom:1px solid var(--border); }
+    .dept-label { border-right:none; }
+    .axis-corner { border-right:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- HEADER -->
+<header class="fade-up">
+  <div class="logo-badge"><span></span> Guatemala · Transformación Digital</div>
+  <h1>TecnoSoluciones GT</h1>
+  <p class="subtitle">Organigrama Matricial Interactivo &nbsp;·&nbsp; Estructura Organizacional 2026</p>
+</header>
+
+<!-- JERARQUÍA SUPERIOR -->
+<div class="section-heading fade-up delay-1">Dirección General</div>
+
+<div class="hierarchy fade-up delay-2">
+  <!-- CEO -->
+  <div class="h-level">
+    <div class="h-card top">
+      <div class="h-avatar">👨‍💼</div>
+      <div class="h-role">Director General / CEO</div>
+      <div class="h-name">GERENCIA EJECUTIVA</div>
+      <div class="color-bar" style="background:var(--accent-cyan);"></div>
+    </div>
+  </div>
+
+  <div class="h-connector"></div>
+  <div class="h-connector-row"></div>
+  <div class="h-connector" style="height:10px;"></div>
+
+  <!-- Nivel 2 -->
+  <div class="h-level">
+    <div class="h-card" style="border-color:rgba(57,255,106,.35);">
+      <div class="h-avatar" style="border-color:rgba(57,255,106,.4);background:rgba(57,255,106,.08);">💼</div>
+      <div class="h-role">Dirección</div>
+      <div class="h-name">ADMINISTRATIVA Y FINANCIERA</div>
+      <div class="color-bar" style="background:var(--accent-lime);"></div>
+    </div>
+    <div class="h-card" style="border-color:rgba(0,200,255,.35);">
+      <div class="h-avatar" style="border-color:rgba(0,200,255,.4);background:rgba(0,200,255,.08);">💻</div>
+      <div class="h-role">Dirección</div>
+      <div class="h-name">TECNOLÓGICA Y PROYECTOS</div>
+      <div class="color-bar" style="background:var(--accent-cyan);"></div>
+    </div>
+    <div class="h-card" style="border-color:rgba(255,212,71,.35);">
+      <div class="h-avatar" style="border-color:rgba(255,212,71,.4);background:rgba(255,212,71,.08);">📣</div>
+      <div class="h-role">Dirección</div>
+      <div class="h-name">COMERCIAL Y MARKETING</div>
+      <div class="color-bar" style="background:var(--accent-gold);"></div>
+    </div>
+    <div class="h-card" style="border-color:rgba(155,107,255,.35);">
+      <div class="h-avatar" style="border-color:rgba(155,107,255,.4);background:rgba(155,107,255,.08);">🎧</div>
+      <div class="h-role">Dirección</div>
+      <div class="h-name">SERVICIO AL CLIENTE</div>
+      <div class="color-bar" style="background:var(--accent-violet);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MATRIX -->
+<div class="section-heading fade-up delay-2">Matriz de Responsabilidades por Proyecto</div>
+
+<div class="org-wrapper fade-up delay-3">
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-cyan);box-shadow:var(--glow-cyan)"></div> Líder / Responsable</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-lime);box-shadow:var(--glow-lime)"></div> Ejecutor Principal</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-violet)"></div> Soporte / Colabora</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-gold)"></div> Informado / Consultor</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent-pink)"></div> Coordinación</div>
+  </div>
+
+  <div class="matrix">
+
+    <!-- AXIS ROW -->
+    <div class="axis-row">
+      <div class="axis-corner">Depto. ↓ / Proyecto →</div>
+      <div class="axis-col-label"><div class="col-icon">🏪</div>Sistema Inventario</div>
+      <div class="axis-col-label"><div class="col-icon">🌐</div>Páginas Web</div>
+      <div class="axis-col-label"><div class="col-icon">⚙️</div>Automatización</div>
+      <div class="axis-col-label"><div class="col-icon">☁️</div>Nube & BD</div>
+      <div class="axis-col-label"><div class="col-icon">📱</div>Apps Web</div>
+      <div class="axis-col-label"><div class="col-icon">🔧</div>Soporte Técnico</div>
+    </div>
+
+    <!-- ROW 1: DESARROLLO DE SOFTWARE -->
+    <div class="dept-section">
+      <div class="dept-label" style="border-left:3px solid var(--accent-cyan);">
+        <div class="dept-name" style="color:var(--accent-cyan);">💻 Desarrollo de Software</div>
+        <div class="dept-head">Head: <strong>Líder Técnico</strong></div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Líder
+          <div class="chip-tooltip"><div class="tooltip-title">Desarrollo de Software — Inventario</div>Diseña e implementa el sistema de inventario adaptado a tiendas, ferreterías y clínicas. Control de stock, alertas y reportes.</div>
+        </div>
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Backend
+          <div class="chip-tooltip"><div class="tooltip-title">Backend Dev</div>Desarrollo de APIs y base de datos para gestión de inventario en tiempo real.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Frontend
+          <div class="chip-tooltip"><div class="tooltip-title">Desarrollo — Páginas Web</div>Programación del sitio: integraciones, formularios, pasarelas de pago y funcionalidades especiales.</div>
+        </div>
+        <div class="chip r-supp">
+          <div class="chip-dot"></div>Soporte Dev
+          <div class="chip-tooltip"><div class="tooltip-title">Soporte Desarrollo</div>Asistencia técnica al equipo de diseño durante la implementación.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Líder
+          <div class="chip-tooltip"><div class="tooltip-title">Automatización</div>Diseña flujos automatizados con herramientas como n8n, Zapier o scripts a medida para restaurantes, colegios y cooperativas.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Líder
+          <div class="chip-tooltip"><div class="tooltip-title">Nube & Bases de Datos</div>Arquitectura en la nube (GCP/AWS), diseño de bases de datos relacionales y configuración de servidores.</div>
+        </div>
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>DBA
+          <div class="chip-tooltip"><div class="tooltip-title">Administrador BD</div>Gestión, optimización y seguridad de las bases de datos de los clientes.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Líder
+          <div class="chip-tooltip"><div class="tooltip-title">Aplicaciones Web</div>Desarrollo de apps React/Vue para emprendimientos, ONG y cooperativas con dashboards a medida.</div>
+        </div>
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Full Stack
+          <div class="chip-tooltip"><div class="tooltip-title">Full Stack Dev</div>Implementación completa: frontend, backend y despliegue en producción.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-supp">
+          <div class="chip-dot"></div>Tier 2
+          <div class="chip-tooltip"><div class="tooltip-title">Soporte Técnico Nivel 2</div>Resuelve tickets escalados que requieren intervención en código o base de datos.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2: DISEÑO UX/UI -->
+    <div class="dept-section">
+      <div class="dept-label" style="border-left:3px solid var(--accent-pink);">
+        <div class="dept-name" style="color:var(--accent-pink);">🎨 Diseño UX/UI</div>
+        <div class="dept-head">Head: <strong>Diseñador Senior</strong></div>
+      </div>
+      <div class="cell">
+        <div class="chip r-supp">
+          <div class="chip-dot"></div>UX
+          <div class="chip-tooltip"><div class="tooltip-title">UX — Inventario</div>Diseña interfaz intuitiva para dueños de tienda sin experiencia tecnológica previa.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Líder
+          <div class="chip-tooltip"><div class="tooltip-title">Diseño Web</div>Maquetación, identidad visual, experiencia de usuario y diseño responsive para cada cliente.</div>
+        </div>
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>UI Design
+          <div class="chip-tooltip"><div class="tooltip-title">UI Design</div>Creación de componentes visuales, paletas de color y guías de estilo.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Consultor
+          <div class="chip-tooltip"><div class="tooltip-title">Consultoría UX — Automatización</div>Asegura que los flujos automatizados tengan interfaces amigables para el usuario final.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Consultor
+          <div class="chip-tooltip"><div class="tooltip-title">Diseño — Nube</div>Diseño de dashboards de monitoreo para que el cliente vea sus datos fácilmente.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Prototipado
+          <div class="chip-tooltip"><div class="tooltip-title">Prototipado Apps</div>Crea prototipos en Figma para validación con el cliente antes del desarrollo.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Informado
+          <div class="chip-tooltip"><div class="tooltip-title">Diseño — Soporte</div>Recibe feedback sobre usabilidad para futuras mejoras de interfaz.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: ADMINISTRACIÓN Y FINANZAS -->
+    <div class="dept-section">
+      <div class="dept-label" style="border-left:3px solid var(--accent-lime);">
+        <div class="dept-name" style="color:var(--accent-lime);">💼 Administración & Finanzas</div>
+        <div class="dept-head">Head: <strong>Gerente Administrativo</strong></div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>Contrato
+          <div class="chip-tooltip"><div class="tooltip-title">Contratos — Inventario</div>Gestiona contratos, facturación y cobros del servicio de implementación.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>Facturación
+          <div class="chip-tooltip"><div class="tooltip-title">Facturación Web</div>Control de pagos, planes mensuales de hosting y mantenimiento web.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Presupuesto
+          <div class="chip-tooltip"><div class="tooltip-title">Presupuesto Automatización</div>Aprueba presupuestos y monitorea la rentabilidad de proyectos de automatización.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>Licencias
+          <div class="chip-tooltip"><div class="tooltip-title">Licencias — Nube</div>Gestiona suscripciones a servicios cloud y controla costos de infraestructura.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Presupuesto
+          <div class="chip-tooltip"><div class="tooltip-title">Presupuesto — Apps</div>Evalúa viabilidad financiera y ROI esperado de cada aplicación.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Gestión
+          <div class="chip-tooltip"><div class="tooltip-title">Gestión Soporte</div>Administra contratos de soporte técnico mensual, SLAs y cobros recurrentes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: COMERCIAL Y VENTAS -->
+    <div class="dept-section">
+      <div class="dept-label" style="border-left:3px solid var(--accent-gold);">
+        <div class="dept-name" style="color:var(--accent-gold);">📣 Comercial & Ventas</div>
+        <div class="dept-head">Head: <strong>Gerente Comercial</strong></div>
+      </div>
+      <div class="cell">
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Ventas
+          <div class="chip-tooltip"><div class="tooltip-title">Ventas — Inventario</div>Prospecta tiendas de barrio, ferreterías y clínicas. Presenta demos y cierra contratos.</div>
+        </div>
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Propuesta
+          <div class="chip-tooltip"><div class="tooltip-title">Propuesta Comercial</div>Elabora cotizaciones y propuestas adaptadas a cada tipo de negocio guatemalteco.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Ventas
+          <div class="chip-tooltip"><div class="tooltip-title">Ventas Web</div>Captación de restaurantes, colegios y emprendimientos interesados en presencia digital.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Demos
+          <div class="chip-tooltip"><div class="tooltip-title">Demos — Automatización</div>Realiza demostraciones de flujos automatizados a clientes potenciales en sus negocios.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-supp">
+          <div class="chip-dot"></div>Coordinación
+          <div class="chip-tooltip"><div class="tooltip-title">Comercial — Nube</div>Coordina la venta de planes cloud con el equipo técnico para alinear expectativas.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Captación
+          <div class="chip-tooltip"><div class="tooltip-title">Captación — Apps</div>Identifica ONG, cooperativas y emprendimientos que necesitan apps web a medida.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Renovaciones
+          <div class="chip-tooltip"><div class="tooltip-title">Renovaciones Soporte</div>Gestiona renovaciones de contratos de soporte y upselling a clientes existentes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 5: SOPORTE Y ATENCIÓN -->
+    <div class="dept-section">
+      <div class="dept-label" style="border-left:3px solid var(--accent-violet);">
+        <div class="dept-name" style="color:var(--accent-violet);">🎧 Soporte & Atención al Cliente</div>
+        <div class="dept-head">Head: <strong>Coordinador de Soporte</strong></div>
+      </div>
+      <div class="cell">
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Capacitación
+          <div class="chip-tooltip"><div class="tooltip-title">Capacitación — Inventario</div>Entrena a los empleados del negocio en el uso del sistema de inventario instalado.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-supp">
+          <div class="chip-dot"></div>Onboarding
+          <div class="chip-tooltip"><div class="tooltip-title">Onboarding Web</div>Acompaña al cliente en los primeros días de uso de su página web nueva.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Seguimiento
+          <div class="chip-tooltip"><div class="tooltip-title">Seguimiento — Automatización</div>Monitorea que los procesos automatizados funcionen correctamente y atiende fallas.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-supp">
+          <div class="chip-dot"></div>Monitoreo
+          <div class="chip-tooltip"><div class="tooltip-title">Monitoreo — Nube</div>Alerta al equipo técnico sobre caídas de servidor o lentitud en los servicios cloud.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-supp">
+          <div class="chip-dot"></div>Soporte
+          <div class="chip-tooltip"><div class="tooltip-title">Soporte — Apps</div>Atiende dudas y reportes de errores de los usuarios finales de las aplicaciones.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-lead">
+          <div class="chip-dot"></div>Líder
+          <div class="chip-tooltip"><div class="tooltip-title">Soporte Técnico</div>Primera línea de atención: tickets, WhatsApp, email. Resuelve problemas comunes y escala casos complejos a Desarrollo.</div>
+        </div>
+        <div class="chip r-exec">
+          <div class="chip-dot"></div>Help Desk
+          <div class="chip-tooltip"><div class="tooltip-title">Help Desk</div>Gestiona el sistema de tickets, responde en menos de 4 horas hábiles y da seguimiento hasta cierre.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 6: GESTIÓN DE PROYECTOS -->
+    <div class="dept-section">
+      <div class="dept-label" style="border-left:3px solid rgba(255,255,255,.3);">
+        <div class="dept-name" style="color:var(--text-main);">📋 Gestión de Proyectos (PMO)</div>
+        <div class="dept-head">Head: <strong>Project Manager</strong></div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>PM
+          <div class="chip-tooltip"><div class="tooltip-title">Project Manager — Inventario</div>Coordina plazos, entregables y comunicación entre el cliente y los equipos de desarrollo.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>PM
+          <div class="chip-tooltip"><div class="tooltip-title">Project Manager — Web</div>Gestiona sprints de diseño y desarrollo, valida con el cliente en cada etapa.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>PM
+          <div class="chip-tooltip"><div class="tooltip-title">Project Manager — Automatización</div>Define alcance, hitos y KPIs de cada proyecto de automatización.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>PM
+          <div class="chip-tooltip"><div class="tooltip-title">Project Manager — Nube</div>Planifica migración a la nube y garantiza cero downtime durante la implementación.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-coord">
+          <div class="chip-dot"></div>PM
+          <div class="chip-tooltip"><div class="tooltip-title">Project Manager — Apps</div>Aplica metodología ágil para desarrollo iterativo de aplicaciones web.</div>
+        </div>
+      </div>
+      <div class="cell">
+        <div class="chip r-info">
+          <div class="chip-dot"></div>Métricas
+          <div class="chip-tooltip"><div class="tooltip-title">Métricas de Soporte</div>Analiza tiempos de respuesta y satisfacción del cliente para mejora continua.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /matrix -->
+</div><!-- /org-wrapper -->
+
+<!-- CARDS MISIÓN VISIÓN CLIENTES -->
+<div class="section-heading fade-up delay-4">Información Estratégica</div>
+
+<div class="info-row fade-up delay-4">
+  <div class="info-card" style="border-color:rgba(0,200,255,.3);">
+    <h3 style="color:var(--accent-cyan);">🌟 Misión</h3>
+    <p>Brindar soluciones tecnológicas accesibles e innovadoras a pequeñas y medianas empresas en Guatemala, optimizando sus procesos administrativos mediante el desarrollo e implementación de sistemas digitales que impulsen su crecimiento y competitividad.</p>
+  </div>
+  <div class="info-card" style="border-color:rgba(57,255,106,.3);">
+    <h3 style="color:var(--accent-lime);">🚀 Visión</h3>
+    <p>Ser una empresa líder en transformación digital para PyMEs en Guatemala, reconocida por la calidad de nuestros servicios, innovación constante y compromiso con el desarrollo tecnológico del país.</p>
+  </div>
+  <div class="info-card" style="border-color:rgba(255,212,71,.3);">
+    <h3 style="color:var(--accent-gold);">🎯 Clientes Objetivo</h3>
+    <ul>
+      <li>Tiendas de barrio</li>
+      <li>Ferreterías</li>
+      <li>Restaurantes pequeños</li>
+      <li>Clínicas privadas</li>
+      <li>Colegios</li>
+      <li>Emprendimientos</li>
+      <li>ONG locales</li>
+      <li>Cooperativas</li>
+    </ul>
+  </div>
+  <div class="info-card" style="border-color:rgba(155,107,255,.3);">
+    <h3 style="color:var(--accent-violet);">🏢 Servicios Ofrecidos</h3>
+    <ul>
+      <li>Sistemas de inventario</li>
+      <li>Páginas web para negocios</li>
+      <li>Automatización de procesos</li>
+      <li>Soporte técnico</li>
+      <li>Implementación en la nube</li>
+      <li>Bases de datos administrativas</li>
+      <li>Aplicaciones web simples</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  © 2026 TecnoSoluciones GT &nbsp;·&nbsp; Organigrama Matricial &nbsp;·&nbsp; Guatemala, C.A. &nbsp;·&nbsp; Pasa el cursor sobre los roles para ver detalles
+</footer>
+
+</body>
+</html>
